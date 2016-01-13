@@ -1,0 +1,126 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: "Lato","Segoe UI","Avenir","Helvetica Neue",Helvetica,sans-serif;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+}
+
+.container {
+    padding: 3rem;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+html, body, .container {
+    height: 100%;
+    width: 100%;
+}
+
+.container .pane {
+    margin: auto;
+}
+
+.description {
+    height: 100%;
+}
+
+.description h1 {
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin: 0;
+}
+
+.description #subline {
+    width: 400px;
+}
+
+.description #subline p {
+    margin: 0;
+}
+
+#emoji-box {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+#emoji-box.loading {
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+    background: #efefef;
+}
+
+#emoji-box .loading {
+    color: #cdcdcd;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+#emoji-box .emoji {
+    height: 40px;
+    width: 40px;;
+    padding: 5px;
+}
+
+#bomb-layout {
+    margin-top: 3rem;
+}
+
+#bomb-layout .tempter {
+    width: 100%;
+    min-width: 110px;
+    max-width: 240px;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border-radius: 5px;
+    padding: 0.25rem;
+    text-align: center;
+    margin: auto;
+    margin-top: 1rem;
+    position: relative;
+}
+
+#bomb-layout .tempter:hover {
+    cursor: default;
+}
+
+#bomb-layout .tempter:after {
+	bottom: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-bottom-color: rgba(0, 0, 0, 0.3);
+	border-width: 10px;
+	margin-left: -10px;
+}
+
+#bomb-layout .bomb-holder {
+    margin-bottom: 1.5rem;
+    position: relative;
+    left: 8px;
+}
+
+#bomb-layout .bomb-holder .bomb-container {
+    margin: auto;
+}
