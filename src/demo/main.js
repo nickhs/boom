@@ -3,7 +3,8 @@ import {Bomb} from '../boom/bomb.js';
 const EMOJI_COUNT = 60; // num of emojis on the server
 
 // keep in sync with demo.css #emoji-box .emoji
-const EMOJI_SIZE = 40; // size of emojis (to make sense of how many to draw)
+const MIN_EMOJI_SIZE = 40; // size of emojis (to make sense of how many to draw)
+const MAX_EMOJI_RENDERED = 300;
 
 class EmojiBox {
     constructor(el) {
@@ -11,6 +12,7 @@ class EmojiBox {
             throw 'You need to specify an element (el)';
 
         this.el = el;
+        this.emoji = 0;
 
         // create the image handles;
         this.makeImages();
@@ -19,13 +21,24 @@ class EmojiBox {
         this.el.classList.remove('loading');
 
         this.el.addEventListener('mousemove', this.handleMouseMove.bind(this));
+
+        window.requestAnimationFrame(this.refresh.bind(this));
+
     }
 
     handleMouseMove(event) {
         let emoji = Math.round((Math.random() * EMOJI_COUNT));
-        this.images.forEach((img) => {
-            img.src = `/emoji_icons/${emoji}.svg`;
-        });
+        this.emoji = emoji;
+    }
+
+    refresh() {
+        if (this.emoji != this.images[0].src) {
+            this.images.forEach((img) => {
+                img.src = `/emoji_icons/${this.emoji}.svg`;
+            });
+        }
+
+        window.requestAnimationFrame(this.refresh.bind(this));
     }
 
     makeImages() {
@@ -33,11 +46,23 @@ class EmojiBox {
 
         let images = [];
         let boundingRect = this.el.getBoundingClientRect();
-        let emoji_count = (boundingRect.width * boundingRect.height) / Math.pow(EMOJI_SIZE, 2);
+        // let emoji_count = (boundingRect.width * boundingRect.height) / Math.pow(EMOJI_SIZE, 2);
+        let desired_emoji_size = Math.sqrt((boundingRect.width * boundingRect.height) / MAX_EMOJI_RENDERED);
+        desired_emoji_size = Math.ceil(desired_emoji_size);
+
+        if (desired_emoji_size < MIN_EMOJI_SIZE) {
+            desired_emoji_size = MIN_EMOJI_SIZE;
+        }
+
+        // now that we've determined the size figure out how many emojis we need
+        let emoji_count = (boundingRect.width * boundingRect.height) / Math.pow(desired_emoji_size, 2);
+        emoji_count = Math.ceil(emoji_count);
 
         for (let i = 0; i < emoji_count; i++) {
             let img = new Image();
-            img.src = `/emoji_icons/0.svg`;
+            img.src = `/emoji_icons/${this.emoji}.svg`;
+            img.height = desired_emoji_size;
+            img.width = desired_emoji_size;
             img.className = 'emoji';
             images.push(img);
         }
@@ -58,7 +83,7 @@ class Tempter {
 
         this.el = document.createElement('div');
         this.el.className = 'tempter';
-        this.el.innerText = 'Go on. Try it.';
+        this.el.innerText = 'Go on. Click me.';
 
         this.parentEl.appendChild(this.el);
     }
@@ -79,16 +104,29 @@ class BombContainer {
 
         let bombFrag = this.templateBomb.createBomb();
         bombHolder.appendChild(bombFrag);
+        let bombFragEl = this.bombFragEl = bombHolder.querySelector('div');
+        bombFragEl.classList.add('jump');
         this.el.appendChild(bombHolder);
         this.listeners.handleBombPickup = this.handleBombPickup.bind(this);
         this.templateBomb.getBomb().addEventListener('click', this.listeners.handleBombPickup);
 
-        new Tempter(this.el);
+        this.tempter = new Tempter(this.el);
     }
 
     handleBombPickup() {
+        this.bombFragEl.classList.remove('jump');
+        this.listeners.handleBombDrop = this.handleBombDrop.bind(this);
+
         let bomb = new Bomb({inert: false});
         document.body.appendChild(bomb.createBomb());
+
+        setTimeout(() =>
+            window.addEventListener('click', this.listeners.handleBombDrop),
+            50);
+    }
+
+    handleBombDrop() {
+        window.removeEventListener('click', this.listeners.handleBombDrop);
     }
 }
 

@@ -33,6 +33,9 @@ html, body, .container {
 
 .description {
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .description h1 {
@@ -74,8 +77,6 @@ html, body, .container {
 }
 
 #emoji-box .emoji {
-    height: 40px;
-    width: 40px;;
     padding: 5px;
 }
 
@@ -115,6 +116,25 @@ html, body, .container {
 	margin-left: -10px;
 }
 
+#bomb-layout .jump {
+    animation-name: up-and-down;
+    animation-iteration-count: infinite;
+    animation-duration: 0.5s;
+    animation-direction: alternate;
+
+}
+
+@keyframes up-and-down {
+    from {
+        transform: translate(0px, 5px);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: translate(0px, 0px);
+    }
+}
+
 #bomb-layout .bomb-holder {
     margin-bottom: 1.5rem;
     position: relative;
@@ -123,4 +143,28 @@ html, body, .container {
 
 #bomb-layout .bomb-holder .bomb-container {
     margin: auto;
+}
+
+#info {
+    margin-top: 3rem;
+}
+
+#info a.button {
+    margin: 1rem auto;
+    text-align: center;
+    background: #F38630;
+    border-radius: 5px;
+    color: white;
+    width: 100%;
+    min-width: 110px;
+    max-width: 300px;
+    padding: 0.5rem;
+    display: block;
+    text-decoration: none;
+    font-size: 1.5rem;
+    transition: background ease-in-out 0.25s;
+}
+
+#info a.button:hover {
+    background: #FA6900;
 }

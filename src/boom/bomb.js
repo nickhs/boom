@@ -5,22 +5,26 @@ import logger from './logger.js';
 let COLORS = ['red', 'green', 'blue', 'orange', 'brown', 'cyan'];
 let COUNTER = 0;
 
+const TRANSLATE_REGEX = /translate\((.+)px,\s+(.+)px\)/;
+const ROTATE_REGEX = /rotate\((.+)deg\)/;
+
 class ExplodableElement {
-    constructor(el, bomb) {
+    constructor(el, bomb, additive) {
         this.el = el;
-        this.bomb = bomb;
+        additive = additive ? additive : false;
+        let scale = bomb.state.scale;
 
         // determine how far away we are from the bomb
         let currentPos = this.el.getBoundingClientRect();
         let myX = currentPos.left + (currentPos.width / 2);
         let myY = currentPos.top + (currentPos.height / 2);
-        let xDiff = myX - this.bomb.getBombLocation().x;
-        let yDiff = myY - this.bomb.getBombLocation().y;
+        let xDiff = myX - bomb.getBombLocation().x;
+        let yDiff = myY - bomb.getBombLocation().y;
         let diff = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
 
         // determine how far we are going to travel
         // it's inversely proportional to it's distance from the bomb
-        let newDiff = ((1 / diff) * 1000);
+        let newDiff = ((1 / diff) * 1000) * scale;
 
         let calcPos = function(axisDiff, otherAxisDiff) {
             let axisMag = Math.abs((axisDiff / otherAxisDiff));
@@ -36,8 +40,27 @@ class ExplodableElement {
 
         this.newX = calcPos(xDiff, yDiff);
         this.newY = calcPos(yDiff, xDiff);
-        // this.randDeg = (Math.random() * 360);
+
+        if (newDiff > 8) {
+            this.randDeg = (Math.random() * 10) * newDiff;
+        } else {
+            this.randDeg = 0;
+        }
+
         this.duration = 0.1 + (Math.random() * 0.5);
+        if (additive && this.el.style.transform.length > 0) {
+            // we don't want to butcher existing tranforms
+            let oldTransform = this.el.style.transform;
+
+            if (oldTransform.match(TRANSLATE_REGEX)) {
+                this.newX += parseFloat(oldTransform.match(TRANSLATE_REGEX)[1]);
+                this.newY += parseFloat(oldTransform.match(TRANSLATE_REGEX)[2]);
+            }
+
+            if (oldTransform.match(ROTATE_REGEX)) {
+                this.randDeg += parseFloat(oldTransform.match(ROTATE_REGEX)[1]);
+            }
+        }
 
         /*
         this.el.style.backgroundColor = COLORS[COUNTER];
@@ -50,8 +73,8 @@ class ExplodableElement {
 
     explode() {
         this.el.style.transition = `ease-out ${this.duration}s all`;
-        // this.el.style.transform = `translate(${this.newX}px, ${this.newY}px) rotate(${this.randDeg}deg)`;
-        this.el.style.transform = `translate(${this.newX}px, ${this.newY}px)`;
+        this.el.style.transform = `translate(${this.newX}px, ${this.newY}px) rotate(${this.randDeg}deg)`;
+        // this.el.style.transform = `translate(${this.newX}px, ${this.newY}px)`;
     }
 }
 
@@ -59,6 +82,7 @@ export const BombDefaults = {
     'size': 60, // in px
     'transitionSpeed': 0.25, // in seconds
     'inert': false,
+    'additive': true,
 };
 
 // FIXME make these settings
@@ -84,6 +108,7 @@ export class Bomb {
         }
 
         this.state = {};
+        this.state.scale = 1;
         this.listeners = {};
     }
 
@@ -103,13 +128,40 @@ export class Bomb {
         if (this.settings.inert === false) {
             this.listeners.handleMouseMove = this.handleMouseMove.bind(this);
             this.listeners.handleClick = this.dropBomb.bind(this);
+            this.listeners.handleMouseScroll = this.handleMouseScroll.bind(this);
 
             window.addEventListener('mousemove', this.listeners.handleMouseMove);
+            window.addEventListener('wheel', this.listeners.handleMouseScroll);
             bombEl.addEventListener('click', this.listeners.handleClick);
+
+
+            this.state.rafCall = window.requestAnimationFrame(this.refreshBomb.bind(this));
         }
 
         this.state.bomb = bombEl;
         return bombFrag;
+
+    }
+
+    refreshBomb() {
+        let translate = '';
+        let scale = '';
+
+        if (this.state.location) {
+            translate = `translate(${this.state.location.x}px, ${this.state.location.y}px)`;
+        }
+
+        if (this.state.scale) {
+            scale = `scale(${this.state.scale})`;
+        }
+
+        if (this.state.scale || this.state.location) {
+            let transform = `${translate} ${scale}`;
+            logger.debug('transform is', transform);
+            this.getBomb().style.transform = transform;
+        }
+
+        this.state.rafCall = window.requestAnimationFrame(this.refreshBomb.bind(this));
     }
 
     static getBomb(bombFrag) {
@@ -122,14 +174,25 @@ export class Bomb {
     }
 
     handleMouseMove(event) {
-        if (this.getBomb().style.postion != 'absolute') {
-            this.getBomb().style.position = 'absolute';
-            this.getBomb().style.top = 0;
-            this.getBomb().style.left = 0;
+        if (this.getBomb().style.position != 'absolute') {
+            let bombEl = this.getBomb();
+            bombEl.style.position = 'absolute';
+            bombEl.style.top = 0;
+            bombEl.style.left = 0;
         }
 
         let posOffset = this.settings.size / 2;
-        this.getBomb().style.transform = `translate(${event.pageX - posOffset}px, ${event.pageY - posOffset}px)`;
+        this.state.location = {};
+        this.state.location.x = event.pageX - posOffset;
+        this.state.location.y = event.pageY - posOffset;
+    }
+
+    handleMouseScroll(event) {
+        event.preventDefault();
+        this.state.scale += 0.01 * event.deltaY;
+        if (this.state.scale > 10) this.state.scale = 10;
+        if (this.state.scale < 0.5) this.state.scale = 0.5;
+        logger.debug('size is now', this.state.scale);
     }
 
     dropBomb(event) {
@@ -138,35 +201,11 @@ export class Bomb {
         window.removeEventListener('click', this.listeners.handleClick);
         // stop moving the bomb
         window.removeEventListener('mousemove', this.listeners.handleMouseMove);
+        window.removeEventListener('wheel', this.listeners.handleMouseScroll);
+        // stop raf loop
+        window.cancelAnimationFrame(this.state.rafCall);
 
         this.activateBomb();
-        /*
-        let bombFrag = this.createBomb();
-        bombEl.classList.remove('full-size');
-        bombEl.style.position = 'absolute';
-
-        let posOffset = this.settings.size / 2;
-
-        this.location = {
-            x: event.pageX,
-            y: event.pageY
-        };
-
-        logger.debug(`bomb location is x:${this.location.x} y:${this.location.y}`);
-
-        bombEl.style.left = `${this.location.x - posOffset}px`;
-        bombEl.style.top = `${this.location.y - posOffset}px`;
-        bombEl.style.transition = `all linear ${this.settings.transitionSpeed}s`;
-        */
-
-        // bombEl.addEventListener('click', this.activateBomb.bind(this));
-
-        /*
-        // FIXME why does this have to happen with a timeout?
-        setTimeout(() => {
-            bombEl.classList.add('full-size');
-        }, 100);
-        */
     }
 
     activateBomb(event) {
@@ -176,19 +215,14 @@ export class Bomb {
         this.getBomb().classList.remove('dropped');
 
         let validElements = this.determineElements();
-        this.explodableElemets = validElements.map(e => new ExplodableElement(e, this));
+        this.explodableElemets = validElements.map(
+            e => new ExplodableElement(e, this, this.settings.additive));
     }
 
     determineElements() {
         let root = document.body;
         let elements = this._determineElements(root);
         logger.debug('Found matching elements:', elements.length);
-
-        /*
-        elements = elements.filter(e => e.offsetWidth >= MIN_SIZE && e.offsetHeight >= MIN_SIZE);
-        elements = elements.filter(e => !e.classList.contains('bomb-container'));
-        */
-
         return elements;
     }
 

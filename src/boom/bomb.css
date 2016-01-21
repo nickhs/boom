@@ -21,8 +21,8 @@
     animation-timing-function: ease-in-out;
 }
 
-.bomb-container.exploded svg path {
-    fill: lightgrey;
+.bomb-container.exploded {
+    opacity: 0.025;
 }
 
 
