@@ -40,6 +40,4 @@ module.exports = {
     resolve: {
         root: path.resolve(__dirname, 'src'),
     },
-
-    devtool: "cheap-module-eval-source-map",
 };

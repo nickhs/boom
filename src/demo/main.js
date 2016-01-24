@@ -83,7 +83,7 @@ class Tempter {
 
         this.el = document.createElement('div');
         this.el.className = 'tempter';
-        this.el.innerText = 'Go on. Click me.';
+        this.el.textContent = 'Go on. Click me.';
 
         this.parentEl.appendChild(this.el);
     }

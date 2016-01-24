@@ -3,6 +3,7 @@
     height: 50px;
     transform-origin: center;
     transform: scale(0.2);
+    z-index: 99999;
     /* transition: transform ease-in-out 1s; */
 }
 
@@ -23,6 +24,7 @@
 
 .bomb-container.exploded {
     opacity: 0.025;
+    z-index: 1;
 }
 
 

@@ -2,9 +2,6 @@ import './bomb.css';
 import BombTemplate from './bomb_template.js';
 import logger from './logger.js';
 
-let COLORS = ['red', 'green', 'blue', 'orange', 'brown', 'cyan'];
-let COUNTER = 0;
-
 const TRANSLATE_REGEX = /translate\((.+)px,\s+(.+)px\)/;
 const ROTATE_REGEX = /rotate\((.+)deg\)/;
 
@@ -62,12 +59,6 @@ class ExplodableElement {
             }
         }
 
-        /*
-        this.el.style.backgroundColor = COLORS[COUNTER];
-        this.color = COLORS[COUNTER];
-        COUNTER += 1;
-        */
-
         logger.debug(`color ${this.color} is moving diff ${newDiff} as its ${diff} far away`);
     }
 
@@ -124,7 +115,7 @@ export class Bomb {
         bombEl.style.width = `${this.settings.size}px`;
         bombEl.style.height = `${this.settings.size}px`;
 
-        console.log("settings", this.settings);
+        logger.debug("settings", this.settings);
         if (this.settings.inert === false) {
             this.listeners.handleMouseMove = this.handleMouseMove.bind(this);
             this.listeners.handleClick = this.dropBomb.bind(this);
@@ -196,9 +187,14 @@ export class Bomb {
     }
 
     dropBomb(event) {
-        console.log("dropBomb clicked");
+        logger.debug("dropBomb clicked");
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         // you can only drop one bomb
-        window.removeEventListener('click', this.listeners.handleClick);
+        this.getBomb().removeEventListener('click', this.listeners.handleClick);
         // stop moving the bomb
         window.removeEventListener('mousemove', this.listeners.handleMouseMove);
         window.removeEventListener('wheel', this.listeners.handleMouseScroll);

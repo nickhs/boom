@@ -3,12 +3,15 @@
  *
  */
 
+import config from "../config/config.js";
+
 function load(doc) {
     var bombScript = doc.createElement('script');
-    bombScript.setAttribute('src', 'http://localhost:8080/build/bookmark_entry.js');
+    bombScript.setAttribute('src', config.bookmarkletLocation);
     document.head.appendChild(bombScript);
 }
 
 (function(doc) {
     load(doc);
+    console.log("it worked!");
 }(document));
