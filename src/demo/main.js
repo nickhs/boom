@@ -32,7 +32,7 @@ class EmojiBox {
     }
 
     refresh() {
-        if (this.emoji != this.images[0].src) {
+        if (!this.images[0].src.includes(`/${this.emoji}.svg`)) {
             this.images.forEach((img) => {
                 img.src = `/emoji_icons/${this.emoji}.svg`;
             });
