@@ -46,7 +46,8 @@ class EmojiBox {
 
         let images = [];
         let boundingRect = this.el.getBoundingClientRect();
-        // let emoji_count = (boundingRect.width * boundingRect.height) / Math.pow(EMOJI_SIZE, 2);
+
+        // work out how big to make our emojis
         let desired_emoji_size = Math.sqrt((boundingRect.width * boundingRect.height) / MAX_EMOJI_RENDERED);
         desired_emoji_size = Math.ceil(desired_emoji_size);
 
@@ -54,9 +55,12 @@ class EmojiBox {
             desired_emoji_size = MIN_EMOJI_SIZE;
         }
 
+        desired_emoji_size += 5; // add in padding
+
         // now that we've determined the size figure out how many emojis we need
-        let emoji_count = (boundingRect.width * boundingRect.height) / Math.pow(desired_emoji_size, 2);
-        emoji_count = Math.ceil(emoji_count);
+        let emoji_row_count = Math.floor(boundingRect.width / desired_emoji_size);
+        let emoji_col_count = Math.floor(boundingRect.height / desired_emoji_size);
+        let emoji_count = emoji_col_count * emoji_row_count;
 
         for (let i = 0; i < emoji_count; i++) {
             let img = new Image();

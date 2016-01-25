@@ -168,3 +168,10 @@ html, body, .container {
 #info a.button:hover {
     background: #FA6900;
 }
+
+#add-bookmarklet .explanation {
+    margin: 1rem auto;
+    text-align: center;
+    position: relative;
+    top: -0.5rem;
+}
