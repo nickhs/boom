@@ -7,7 +7,7 @@ to the realisation that this page incorporates all the worst things in the world
 
 *BLOW THAT SUCKER UP*
 
-Demo up at [http://boom.nickhs.com](boom.nickhs.com)
+Demo up at [http://boom.nickhs.com](http://boom.nickhs.com)
 
 ## Development
 
