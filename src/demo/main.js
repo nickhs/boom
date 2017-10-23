@@ -88,8 +88,12 @@ class Tempter {
         this.el = document.createElement('div');
         this.el.className = 'tempter';
         this.el.textContent = 'Go on. Click me.';
-
         this.parentEl.appendChild(this.el);
+        this.onClick = this.onClick.bind(this);
+    }
+
+    onClick() {
+        this.el.textContent = 'Click to release. Scroll to size.';
     }
 }
 
@@ -123,6 +127,7 @@ class BombContainer {
 
         let bomb = new Bomb({inert: false});
         document.body.appendChild(bomb.createBomb());
+        this.tempter.onClick();
 
         setTimeout(() =>
             window.addEventListener('click', this.listeners.handleBombDrop),
