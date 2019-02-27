@@ -16,5 +16,8 @@
     "svg-inline-loader": "^0.4.0",
     "webpack": "^1.12.6",
     "webpack-dev-server": "^1.12.1"
+  },
+  "scripts": {
+    "gulp": "gulp"
   }
 }
