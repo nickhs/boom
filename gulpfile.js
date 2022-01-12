@@ -72,7 +72,7 @@ function copyHelper(sourceFile, destFile) {
     return promise;
 }
 
-gulp.task('make-demo', ['make-bookmarklet'], function(cb) {
+gulp.task('make-demo', gulp.series('make-bookmarklet'), function(cb) {
     // copy all demo deps to build
     let p1 = copyHelper('./demo.css', './build/demo.css');
     let p2 = copyHelper('./demo.html', './build/demo.html');
